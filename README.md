@@ -1,4 +1,4 @@
-# metadata-extractor
+# Metadata AI Extractor
 
 Extracts structured metadata from architectural drawing images using a multimodal LLM.
 
@@ -13,7 +13,7 @@ Given an image URL, it reads the title block of the drawing and returns:
 
 ## Setup
 
-Requires Python 3.13+ and [uv](https://docs.astral.sh/uv/).
+Requires Python 3.13+ and uv.
 
 ```bash
 uv sync
@@ -22,8 +22,8 @@ uv sync
 Create a `.env` file with your API key(s):
 
 ```
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
 ```
 
 ## Model selection
@@ -71,6 +71,16 @@ Each result is either:
 ```
 
 `BatchHandler` uses `asyncio.Semaphore` to cap concurrent LLM calls and exponential backoff (`retry_delay * 2^attempt`) between retries.
+
+## Evaluation
+
+Runs all models against a labeled dataset and scores each field using cosine similarity of OpenAI embeddings (`text-embedding-3-small`). Requires `OPENAI_API_KEY`.
+
+```bash
+uv run python src/evaluation.py
+```
+
+Output is an average similarity score (0–1) per model across `page_id`, `page_name`, `project_name`, and `architect`.
 
 ## Tests
 

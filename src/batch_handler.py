@@ -19,7 +19,7 @@ class BatchHandler:
         self.retry_delay = retry_delay
         self.semaphore = asyncio.Semaphore(max_concurrent)
 
-    async def handle_drawing_with_retry(self, image_url: str) -> dict:
+    async def _handle_drawing_with_retry(self, image_url: str) -> dict:
         last_err = None
         for attempt in range(1, self.max_retries + 1):
             try:
@@ -37,7 +37,7 @@ class BatchHandler:
         return {"url": image_url, "status": "fail", "error": last_err}
 
     async def handle_drawings(self, image_urls: list[str]) -> list[dict]:
-        tasks = [self.handle_drawing_with_retry(url) for url in image_urls]
+        tasks = [self._handle_drawing_with_retry(url) for url in image_urls]
         results = await asyncio.gather(*tasks)
         return results
 
