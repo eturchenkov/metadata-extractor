@@ -2,14 +2,14 @@
 
 Extracts structured metadata from architectural drawing images using a multimodal LLM.
 
-Given an image URL, it reads the title block on the left side of the drawing and returns:
+Given an image URL, it reads the title block of the drawing and returns:
 
 | Field | Example |
 |---|---|
 | `page_id` | `A1.01` |
 | `page_name` | `Ground Floor Plan` |
 | `project_name` | `City Library` |
-| `architect` | `Jane Doe` |
+| `architect` | `ODA NEW YORK` |
 
 ## Setup
 
@@ -19,14 +19,25 @@ Requires Python 3.13+ and [uv](https://docs.astral.sh/uv/).
 uv sync
 ```
 
-Create a `.env.local` file with your API key:
+Create a `.env` file with your API key(s):
 
 ```
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-To switch between models, edit `src/model.py` — `ChatOpenAI` (gpt-4o) and `ChatAnthropic` (claude-opus-4-7) are both wired up, one commented out.
+## Model selection
+
+Set `CURRENT_MLLM` to choose the model (defaults to `gpt-4o`):
+
+| Value | Model |
+|---|---|
+| `gpt-4o` | OpenAI GPT-4o (default) |
+| `opus` | Anthropic Claude Opus 4.7 |
+
+```bash
+CURRENT_MLLM=opus uv run python src/extractor.py
+```
 
 ## Usage
 
@@ -42,7 +53,7 @@ uv run python src/extractor.py
 uv run python src/batch_handler.py
 ```
 
-Or use `BatchHandler` directly:
+Or use `BatchHandler` directly in your own code:
 
 ```python
 from batch_handler import BatchHandler
@@ -55,9 +66,11 @@ results = await handler.handle_drawings(image_urls)
 Each result is either:
 
 ```python
-{"url": "...", "status": "successful", "result": {...}}
+{"url": "...", "status": "successful", "result": {"page_id": ..., "page_name": ..., "project_name": ..., "architect": ...}}
 {"url": "...", "status": "fail", "error": "..."}
 ```
+
+`BatchHandler` uses `asyncio.Semaphore` to cap concurrent LLM calls and exponential backoff (`retry_delay * 2^attempt`) between retries.
 
 ## Tests
 
