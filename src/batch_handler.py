@@ -44,7 +44,7 @@ class BatchHandler:
 
 async def start_handler():
     handler = BatchHandler(llm)
-    pprint(await handler.handle_drawings(link_list[:2]))
+    pprint(await handler.handle_drawings(link_list))
 
 
 if __name__ == "__main__":
