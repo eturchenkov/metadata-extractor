@@ -8,35 +8,27 @@ from batch_handler import BatchHandler
 client = AsyncOpenAI()
 
 
-async def eval():
+async def eval(links: list[str]):
     for llm_name, llm in models.items():
-        print(f"Eval of {llm_name}")
+        print(f"=== Eval of {llm_name} ===")
         handler = BatchHandler(llm.with_structured_output(MetadataModel))
-        md_list = await handler.handle_drawings(link_list[:1])
+        md_list = await handler.handle_drawings(links)
         total = 0
-        for res in md_list:
+        for i, res in enumerate(md_list):
+            subtotal = 0
             if res["status"] == "successful":
                 md = res["result"]
                 url = res["url"]
-                subtotal = 0
-                subtotal += cos_dist(
-                    await calc(md["page_id"]), await calc(target[url]["page_id"])
-                )
-                subtotal += cos_dist(
-                    await calc(md["page_name"]), await calc(target[url]["page_name"])
-                )
-                subtotal += cos_dist(
-                    await calc(md["project_name"]),
-                    await calc(target[url]["project_name"]),
-                )
-                subtotal += cos_dist(
-                    await calc(md["architect"]), await calc(target[url]["architect"])
-                )
-                total += subtotal / 4
-        print(f"{total / len(md_list)}")
+                for key, value in md.items():
+                    subtotal += cos_dist(
+                        await calc_emb(value), await calc_emb(target[url][key])
+                    )
+                total += subtotal / len(md)
+            print(f"{i}  {round(subtotal / 4, 2)}")
+        print(f"total score: {round(total / len(md_list), 2)}")
 
 
-async def calc(text: str) -> None:
+async def calc_emb(text: str) -> np.ndarray:
     response = await client.embeddings.create(
         model="text-embedding-3-small", input=text, encoding_format="float"
     )
@@ -49,4 +41,4 @@ def cos_dist(vec1: np.ndarray, vec2: np.ndarray) -> float:
 
 
 if __name__ == "__main__":
-    asyncio.run(eval())
+    asyncio.run(eval(link_list))

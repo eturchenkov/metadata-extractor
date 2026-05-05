@@ -82,6 +82,21 @@ uv run python src/evaluation.py
 
 Output is an average similarity score (0–1) per model across `page_id`, `page_name`, `project_name`, and `architect`.
 
+Example:
+
+```bash
+=== Eval of gpt-4o ===
+0  0.82
+1  0.61
+2  0.9
+3  0.57
+4  1.0
+5  0.78
+6  0.81
+7  0.73
+total score: 0.78
+```
+
 ## Tests
 
 ```bash
