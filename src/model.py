@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from typing import Annotated
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=".env.local")
 
 
 class MetadataModel(BaseModel):
@@ -14,5 +14,5 @@ class MetadataModel(BaseModel):
     architect: str
 
 
-# llm = ChatOpenAI(model="gpt-4o").with_structured_output(MetadataModel)
-llm = ChatAnthropic(model="claude-opus-4-7").with_structured_output(MetadataModel)
+llm = ChatOpenAI(model="gpt-4o").with_structured_output(MetadataModel)
+# llm = ChatAnthropic(model="claude-opus-4-7").with_structured_output(MetadataModel)
