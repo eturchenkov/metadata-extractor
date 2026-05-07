@@ -26,7 +26,7 @@ def test_model_dump_roundtrip():
 
 @pytest.mark.parametrize(
     "page_id",
-    ["A1.01", "a-1", "A_1", "page.001", "A-1.01_v2", "1", "abc"],
+    ["A1.01", "a-1", "page.001", "A-1.01", "1", "abc"],
 )
 def test_page_id_accepts_valid_pattern(page_id):
     model = MetadataModel(**{**VALID_FIELDS, "page_id": page_id})
@@ -35,7 +35,7 @@ def test_page_id_accepts_valid_pattern(page_id):
 
 @pytest.mark.parametrize(
     "page_id",
-    ["A 1.01", "A/1", "A#1", "page!", "A,1", "", "A1:01"],
+    ["A 1.01", "A/1", "A#1", "page!", "A,1", "", "A1:01", "A_1", "A-1.01_v2"],
 )
 def test_page_id_rejects_invalid_pattern(page_id):
     with pytest.raises(ValidationError):

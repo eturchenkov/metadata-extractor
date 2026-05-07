@@ -9,7 +9,7 @@ load_dotenv()
 
 
 class MetadataModel(BaseModel):
-    page_id: Annotated[str, Field(pattern=r"^[\w.-]+$")]
+    page_id: Annotated[str, Field(pattern=r"^[a-zA-Z0-9.-]+$")]
     page_name: str
     project_name: str
     architect: str
