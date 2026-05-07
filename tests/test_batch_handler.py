@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock, patch
 from model import MetadataModel
 from batch_handler import BatchHandler
 
-
 URLS = [
     "https://example.com/drawing_1.png",
     "https://example.com/drawing_2.png",
@@ -23,24 +22,33 @@ def make_handler(**kwargs):
 async def test_successful_result_shape():
     handler = make_handler()
     with patch("batch_handler.extract_metadata", AsyncMock(return_value=FAKE_METADATA)):
-        result = await handler.handle_drawing_with_retry(URLS[0])
+        result = await handler._handle_drawing_with_retry(URLS[0])
 
-    assert result == {"url": URLS[0], "status": "successful", "result": FAKE_METADATA.model_dump()}
+    assert result == {
+        "url": URLS[0],
+        "status": "successful",
+        "result": FAKE_METADATA.model_dump(),
+    }
 
 
 async def test_failure_after_all_retries():
     handler = make_handler(max_retries=3)
-    with patch("batch_handler.extract_metadata", AsyncMock(side_effect=RuntimeError("api error"))):
-        result = await handler.handle_drawing_with_retry(URLS[0])
+    with patch(
+        "batch_handler.extract_metadata",
+        AsyncMock(side_effect=RuntimeError("api error")),
+    ):
+        result = await handler._handle_drawing_with_retry(URLS[0])
 
     assert result == {"url": URLS[0], "status": "fail", "error": "api error"}
 
 
 async def test_retries_then_succeeds():
     handler = make_handler(max_retries=3)
-    extract = AsyncMock(side_effect=[RuntimeError("timeout"), RuntimeError("timeout"), FAKE_METADATA])
+    extract = AsyncMock(
+        side_effect=[RuntimeError("timeout"), RuntimeError("timeout"), FAKE_METADATA]
+    )
     with patch("batch_handler.extract_metadata", extract):
-        result = await handler.handle_drawing_with_retry(URLS[0])
+        result = await handler._handle_drawing_with_retry(URLS[0])
 
     assert result["status"] == "successful"
     assert extract.call_count == 3
@@ -82,6 +90,7 @@ async def test_concurrency_limit():
         return FAKE_METADATA
 
     import asyncio
+
     with patch("batch_handler.extract_metadata", tracked_extract):
         await handler.handle_drawings(URLS * 4)
 
